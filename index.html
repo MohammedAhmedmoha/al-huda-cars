@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="mainHtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Al Huda Rent a Car</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #ff6600;
+            --bg: #0a0a0a;
+            --card-bg: #161616;
+            --text: #ffffff;
+            --whatsapp: #25d366;
+            --insta: #e1306c;
+            --mail: #ea4335;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0; overflow-x: hidden;
+        }
+
+        /* زر الترجمة - مكانه ثابت بعيد عن زر الباك */
+        .lang-switcher {
+            position: fixed; top: 10px; left: 10px; z-index: 9999;
+        }
+        .lang-switcher button {
+            background: var(--primary); color: white; border: none;
+            padding: 6px 12px; border-radius: 20px; cursor: pointer;
+            font-weight: bold; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        header {
+            padding: 40px 15px 15px; text-align: center;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .hero-h1 { font-size: 1.6rem; margin: 0; color: var(--primary); }
+        .hero-p { font-size: 0.9rem; color: #888; }
+
+        .container { padding: 15px; }
+
+        /* شبكة السيارات - مقاسات مخصصة للموبايل */
+        .car-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* تظهر عربيتين جمب بعض */
+            gap: 10px;
+        }
+
+        .car-card {
+            background: var(--card-bg); border-radius: 12px;
+            overflow: hidden; border: 1px solid #222;
+        }
+        .car-card img { width: 100%; height: 100px; object-fit: cover; }
+        .car-info { padding: 8px; text-align: center; }
+        .car-info h3 { font-size: 12px; margin: 3px 0; }
+        .price { color: var(--primary); font-size: 11px; font-weight: bold; }
+
+        /* صفحة التفاصيل - Overlay */
+        .page-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: var(--bg);
+            z-index: 8000; overflow-y: auto; padding-top: 60px;
+        }
+
+        /* زر الرجوع - حل مشكلة التداخل */
+        .back-btn {
+            background: #222; color: white; padding: 6px 12px;
+            border-radius: 8px; cursor: pointer; 
+            position: fixed; top: 10px; right: 10px; 
+            z-index: 9001; font-size: 13px; border: 1px solid #444;
+        }
+
+        .detail-layout { padding: 10px; max-width: 450px; margin: 0 auto; }
+        .detail-img { width: 100%; border-radius: 12px; margin-bottom: 10px; }
+        
+        .booking-box h2 { font-size: 1.3rem; margin: 0; color: var(--primary); }
+        .booking-box p { font-size: 13px; color: #ccc; margin: 8px 0; }
+
+        input {
+            width: 100%; padding: 10px; margin: 6px 0;
+            background: #1a1a1a; border: 1px solid #333; color: white;
+            border-radius: 8px; box-sizing: border-box; font-size: 13px;
+        }
+
+        .btn-whatsapp-book {
+            background: var(--whatsapp); color: white; width: 100%;
+            padding: 12px; border: none; border-radius: 8px;
+            font-size: 0.9rem; cursor: pointer; font-weight: bold;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+
+        /* الفوتر - Footer */
+        footer {
+            background: #000; padding: 30px 10px; text-align: center;
+            border-top: 1px solid var(--primary); margin-top: 20px;
+        }
+        .footer-icons { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; }
+        .icon-circle {
+            width: 42px; height: 42px; background: #111; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            text-decoration: none; font-size: 18px; border: 1px solid #333;
+        }
+
+        /* اللغات */
+        [lang="en"] { display: none; }
+        .en-mode [lang="ar"] { display: none; }
+        .en-mode [lang="en"] { display: block; }
+        .en-mode { direction: ltr; }
+        .en-mode .back-btn { right: auto; left: 10px; top: 50px; } /* نزول الزرار في الإنجليزي */
+    </style>
+</head>
+<body id="mainBody">
+
+<div class="lang-switcher">
+    <button onclick="toggleLang()">EN / عربي</button>
+</div>
+
+<header>
+    <h1 class="hero-h1"><span lang="ar">الهدى لتأجير السيارات</span><span lang="en">Al Huda Rent a Car</span></h1>
+    <p class="hero-p"><span lang="ar">فخامة في كل رحلة</span><span lang="en">Luxury in every trip</span></p>
+</header>
+
+<div class="container">
+    <div class="car-grid" id="carGrid"></div>
+</div>
+
+<div id="detailPage" class="page-overlay">
+    <div class="back-btn" onclick="closeDetail()">
+        <span lang="ar"><i class="fas fa-arrow-right"></i> رجوع</span>
+        <span lang="en"><i class="fas fa-arrow-left"></i> Back</span>
+    </div>
+    <div class="detail-layout">
+        <img id="dImg" class="detail-img" src="">
+        <div class="booking-box">
+            <h2 id="dTitle"></h2>
+            <div class="price" id="dPrice"></div>
+            <p id="dSpecs"></p>
+            <input type="date" id="pDate">
+            <input type="date" id="rDate">
+            <button class="btn-whatsapp-book" onclick="sendToWhatsApp()">
+                <i class="fab fa-whatsapp"></i>
+                <span lang="ar">حجز واتساب</span>
+                <span lang="en">WhatsApp Booking</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <div class="footer-icons">
+        <a href="https://maps.app.goo.gl/AJSESfQ8GqHmfrFR7" target="_blank" class="icon-circle" style="color:#ea4335;"><i class="fas fa-map-marker-alt"></i></a>
+        <a href="tel:+97455068186" class="icon-circle" style="color:#34b7f1;"><i class="fas fa-phone-alt"></i></a>
+        <a href="https://wa.me/97455068186" target="_blank" class="icon-circle" style="color:var(--whatsapp);"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://www.instagram.com/alhudarentcars" target="_blank" class="icon-circle" style="color:var(--insta);"><i class="fab fa-instagram"></i></a>
+        <a href="mailto:m7mdaly84@gmail.com" class="icon-circle" style="color:var(--mail);"><i class="fas fa-envelope"></i></a>
+    </div>
+    <p style="font-size:11px; color:#666; margin: 10px 0;">Al Huda Rent a Car © 2026</p>
+    <p style="font-size:10px; color:#444;">Doha, Qatar</p>
+</footer>
+
+<script>
+    const cars = [
+        { id: 1, nAr: "كيا سبورتيج 2024", nEn: "Kia Sportage 2024", p: 250, img: "https://images.unsplash.com/photo-1621135802920-133df287f89c?w=400", sAr: "2.0 - أوتوماتيك - 5 مقاعد", sEn: "2.0 - Auto - 5 Seats" },
+        { id: 2, nAr: "تويوتا لاند كروزر", nEn: "Toyota Land Cruiser", p: 850, img: "https://images.unsplash.com/photo-1594568284297-7c64464062b1?w=400", sAr: "V8 - 7 مقاعد - دفع رباعي", sEn: "V8 - 7 Seats - 4WD" },
+        { id: 3, nAr: "مرسيدس S-Class", nEn: "Mercedes S-Class", p: 1400, img: "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400", sAr: "VIP - رفاهية كاملة", sEn: "VIP - Full Luxury" },
+        { id: 4, nAr: "نيسان باترول", nEn: "Nissan Patrol", p: 750, img: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400", sAr: "قوة جبارة - 7 مقاعد", sEn: "Powerful - 7 Seats" },
+        { id: 5, nAr: "هيونداي إلنترا", nEn: "Hyundai Elantra", p: 180, img: "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=400", sAr: "اقتصادية وعملية", sEn: "Economic & Practical" },
+        { id: 6, nAr: "شيفروليه تاهو", nEn: "Chevrolet Tahoe", p: 900, img: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400", sAr: "عائلية ضخمة للسفر", sEn: "Large Family SUV" }
+    ];
+
+    let isEn = false;
+    let currentCar = null;
+
+    function render() {
+        const grid = document.getElementById('carGrid');
+        grid.innerHTML = cars.map(c => `
+            <div class="car-card" onclick="openDetail(${c.id})">
+                <img src="${c.img}">
+                <div class="car-info">
+                    <h3>${isEn ? c.nEn : c.nAr}</h3>
+                    <div class="price">${c.p} ${isEn ? 'QAR' : 'ريال'}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleLang() {
+        isEn = !isEn;
+        document.getElementById('mainHtml').classList.toggle('en-mode');
+        document.getElementById('mainHtml').dir = isEn ? 'ltr' : 'rtl';
+        render();
+        if(currentCar) openDetail(currentCar.id);
+    }
+
+    function openDetail(id) {
+        currentCar = cars.find(c => c.id === id);
+        document.getElementById('dImg').src = currentCar.img;
+        document.getElementById('dTitle').innerText = isEn ? currentCar.nEn : currentCar.nAr;
+        document.getElementById('dPrice').innerText = currentCar.p + (isEn ? " QAR / Day" : " ريال / يوم");
+        document.getElementById('dSpecs').innerText = isEn ? currentCar.sEn : currentCar.sAr;
+        document.getElementById('detailPage').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetail() {
+        document.getElementById('detailPage').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        currentCar = null;
+    }
+
+    function sendToWhatsApp() {
+        const p = document.getElementById('pDate').value;
+        const r = document.getElementById('rDate').value;
+        if(!p || !r) { alert(isEn ? "Select dates!" : "اختر التواريخ!"); return; }
+        const msg = isEn 
+            ? `Hi Al Huda, I want to book ${currentCar.nEn} from ${p} to ${r}`
+            : `مرحباً الهدى، أريد حجز ${currentCar.nAr} من ${p} إلى ${r}`;
+        window.open(`https://wa.me/97455068186?text=${encodeURIComponent(msg)}`);
+    }
+
+    render();
+</script>
+</body>
+</html>
+
